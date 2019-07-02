@@ -1,0 +1,40 @@
+//Strokesplus.Net Version: 0.3.1.9+
+//Author: f9y4ng@gmail.com
+//区域截图，延时操作确保手势执行完毕
+sp.Sleep(100); 
+//初始化
+var v = clr.System.Environment.GetEnvironmentVariable("USERPROFILE");
+var memoryImage = new drawing.System.Drawing.Bitmap(action.Bounds.Width, action.Bounds.Height);
+var memoryGraphics = drawing.System.Drawing.Graphics.FromImage(memoryImage);
+var date = DateTime.Now.ToString("yyyy-MM-dd_HHmmss");
+memoryGraphics.CopyFromScreen(action.Bounds.X, action.Bounds.Y, 0, 0, action.Bounds.Size);
+
+//初始默认为当前用户桌面
+var path = v+"\\Desktop\\S-"+date+".png";
+
+//保存图像至剪切板
+clip.SetImage(memoryImage);
+//保存图像至当前用户桌面
+memoryImage.Save(path);
+
+//大声告诉你截图好了
+var info = new DisplayTextInfo();
+info.Duration = 5000;
+info.Location = 'bottom';
+info.TitleFont = new Font('Segoe UI', 16, host.flags(FontStyle.Bold));
+info.Padding = 15;
+info.Title = '截图成功';
+info.Message = '\r注意：20秒后,剪切板保存的图像将被清理！\n\n' + '文件保存为：'+path;
+sp.DisplayText(info);
+
+//销毁数据
+memoryGraphics.Dispose();
+memoryImage.Dispose();
+
+//清理剪切板
+sp.Sleep(20000);
+info.Duration = 2000;
+info.Title = '剪切板图像已清理';
+info.Message = '';
+sp.DisplayText(info);
+clip.Clear();
