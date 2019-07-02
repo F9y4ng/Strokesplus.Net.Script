@@ -1,0 +1,92 @@
+//声明变量
+var rs = 0;
+var info = "";
+var t_files = [];
+var f_config_main = "";
+var f_config_backup = "";
+
+//可以自定义
+var SourceFolder = "D:\\Program Files\\StrokesPlus.net"; //定义StrokesPlus.net的安装目录
+var BackupFolder = SourceFolder + "\\backup";   //定义备份文件夹目录
+var n_range = 20; // 定义备份数量（将按时间倒序进行清理，仅保存最近的配置备份）
+
+//下面代码如果你看不懂最好别动
+var date = DateTime.Now.ToString("yyyy-MM-dd_HHmmss");
+var p_SPlusNetMainFile = SourceFolder + "\\StrokesPlus.net.bin"
+var p_SPlusNetBackupFile = BackupFolder + "\\StrokesPlus.net." + date + ".bin"
+
+function BackupConfigFile() {
+	// FUNCTIONS
+	function tInsert(arr, str)
+	{
+		var size = arr.length;
+		arr[size] = str;
+		return arr;
+	}
+
+	function tReverse(arr)
+	{
+		for (i = 0; i < arr.length / 2; i++) {
+			temp = arr[i];
+			arr[i] = arr[arr.length - i - 1];
+			arr[arr.length - i - 1] = temp;
+		}
+		return arr;
+	}
+
+	// GET FILES
+	var MainFile = clr.System.IO.Directory.GetFiles(SourceFolder, "*.bin");
+	var file = new FileInfo(MainFile[0]);
+	var name = file.Name;
+	var date_time = file.LastWriteTime;
+	var size = file.Length;
+	if (name == "StrokesPlus.net.bin")
+	{
+		f_config_main = date_time;
+	}
+	var files = clr.System.IO.Directory.GetFiles(BackupFolder);
+	if (files.Length > 0) {
+		for (var i = 0; i < files.Length; i++) {
+			file = new FileInfo(files[i]);
+			name = file.Name;
+			date_time = file.LastWriteTime;
+			var bsize = file.Length;
+            var patt = /^StrokesPlus\.net\.[0-9-_]+\.bin$/ig;
+			if (patt.test(name))
+			{
+				f_config_backup = date_time;
+				bsize = bsize;
+				tInsert(t_files, name);
+			}
+		}
+	} else {
+		f_config_backup = "null";
+	}
+
+	// BACKUP&CLEAN
+	if (f_config_main != f_config_backup)
+	{
+		if(size != bsize)
+		{
+		File.Copy(p_SPlusNetMainFile, p_SPlusNetBackupFile);
+		if (t_files.length >= n_range)
+		{
+			tReverse(t_files); // reverse table
+			for (var i = (n_range - 1); i < t_files.length; i++) {
+				File.Delete(BackupFolder + "\\" + t_files[i]);
+			}
+		}
+		rs = 1;
+		}
+	}
+
+	//NOTICE 
+	if (rs == 1) {
+		info = "设置文件备份完成！\n备份创建时间：" + DateTime.Now.ToString();
+	} else {
+		info = "设置文件无更新，无需新备份";
+	}
+	sp.ShowBalloonTip("备份", info, "Info", 5000);
+}
+//RUN BACKUP
+BackupConfigFile();
