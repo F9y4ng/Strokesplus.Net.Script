@@ -1,3 +1,6 @@
+//Name: 设置备份
+//Strokesplus.Net Version: 0.3.1.9+
+//Author: f9y4ng@gmail.com
 //声明变量
 var rs = 0;
 var info = "";
